@@ -1,4 +1,8 @@
-graph = {"London": ["Stockholm", "Constantinople", "Rome", "Moscow", "Marrakesh"],
+import time
+start_time = time.time()
+
+
+graph = {"London": ["Stockholm", "Constantinople", "Rome", "Moscow", "Marrakesh", "Bermuda"],
          "Stockholm": ["London", "Moscow"],
          "Moscow": ["Constantinople", "Rome", "London", "Stockholm"],
          "Constantinople": ["Moscow", "Alexandria", "Rome", "London"],
@@ -6,48 +10,79 @@ graph = {"London": ["Stockholm", "Constantinople", "Rome", "Moscow", "Marrakesh"
          "Marrakesh": ["Rome", "London", "Lagos"],
          "Alexandria": ["Rome", "Constantinople", "Lagos", "Nairobi"],
          "Nairobi": ["Alexandria", "Lagos"],
-         "Lagos": ["Marrakesh", "Alexandria", "Nairobi"]}
+         "Lagos": ["Marrakesh", "Alexandria", "Nairobi", "Rio de Janeiro"],
+         "Bermuda": ["London", "Ybor City", "Anchorage"],
+         "Ybor City": ["Bermuda", "Havana", "San Francisco"],
+         "Havana": ["Ybor City", "San Francisco"],
+         "Anchorage": ["Bermuda", "San Francisco"],
+         "San Francisco": ["Anchorage", "Ybor City", "Tokyo", "Havana"],
+         "Tokyo": ["San Francisco"],
+         "Rio de Janeiro": ["Lagos", "Buenos Aires"],
+         "Buenos Aires": ["Rio de Janeiro"]}
 
-values = {city: value for city, value in zip(graph.keys(), [3, 1, 1, 3, 1, 3, 3, 1, 1])}
-founded_path = {0: "No path"}
+values = {city: value for city, value in zip(graph.keys(), [3, 1, 1, 1, 1, 3, 3, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3])}
 
 
-def check_stop(passed_time, earned_value, visited, time_limit):
-    if passed_time >= time_limit:
-        max_value = max(founded_path.keys())
-        if earned_value > max_value:
-            founded_path[earned_value] = " - ".join(visited)
-            del founded_path[max_value]
-        elif earned_value == max_value:
-            founded_path[earned_value] += (" or " + " - ".join(visited))
+def find_path(connections,  city_values, start="London", time_limit=5):
+    value_now, time_now = city_values[start], 1
+    res_ls = {(0, "No path")}
+    travel_options = connections[start]
+    for next_city in travel_options:
+        rec_transit(next_city, connections, city_values, value_now,
+                    time_limit, time_now, res_ls, path_now=[f"--> {start} {city_values[start]} Visit"])
+        rec_visit(next_city, connections, city_values, value_now,
+                  time_limit, time_now, res_ls, path_now=[f"--> {start} {city_values[start]} Visit"])
+    return res_ls
+
+
+def stop_and_save(value_now, time_limit, time_now, path_now, res_ls):
+    if time_now >= time_limit:
+        current_value = max(pair[0] for pair in res_ls)
+        if value_now > current_value:
+            res_ls.clear()
+            res_ls.add((value_now, " ".join(path_now)))
+        elif value_now == current_value:
+            res_ls |= {(value_now, " ".join(path_now))}
         return True
+    return False
 
 
-def find_path(passed_time=0, earned_value=0, visited=None, time_limit=11):
-    global founded_path
-    if check_stop(passed_time, earned_value, visited, time_limit):
+def rec_transit(in_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now):
+    time_now += 1
+    path_now.append(f"--> {in_city} - Transit")
+    if stop_and_save(value_now, time_limit, time_now, path_now, res_ls):
         return
-    if visited is None:
-        visited = ["London"]
-    current_city = visited[-1]
-    passed_time += 1        #додаємо час за сценарій
-    earned_value += values[current_city]        #додаємо цінність за сценарій
-    unvisited = sorted(list(set(graph[current_city]) - set(visited)))
-    if not unvisited:
-        return
-    if check_stop(passed_time, earned_value, visited, time_limit):
-        return
-    for city in unvisited:
-        visited.append(city)
-        passed_time += 1        #додаємо час за подорож
-        find_path(passed_time, earned_value, visited)
-        visited.pop()
-        passed_time -= 1
+    travel_options = connections[in_city]
+    for i, next_city in enumerate(travel_options):
+        rec_transit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
+        path_now.pop()
+        if f"--> {next_city} {city_values[in_city]} Visit" not in path_now:
+            rec_visit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
+            path_now.pop()
 
 
-find_path()
-total_value = sum([key for key in founded_path])
-print(total_value)
-pathes = founded_path[total_value].split(" or ")
-for path in pathes:
+def rec_visit(in_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now):
+    # додаємо час за подорож
+    time_now += 1
+    path_now.append(f"--> {in_city} {city_values[in_city]} Visit")
+    if stop_and_save(value_now, time_limit, time_now, path_now, res_ls):
+        return
+    # додаємо час за сценарій
+    time_now += 1
+    value_now += city_values[in_city]
+    travel_options = connections[in_city]
+    if stop_and_save(value_now, time_limit, time_now, path_now, res_ls):
+        return
+    for i, next_city in enumerate(travel_options):
+        rec_transit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
+        path_now.pop()
+        if f"--> {next_city} {city_values[in_city]} Visit" not in path_now:
+            rec_visit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
+            path_now.pop()
+
+
+path_list = find_path(graph, values, time_limit=14, start="Buenos Aires")
+for path in path_list:
     print(path)
+
+print("--- %s seconds ---" % (time.time() - start_time))
