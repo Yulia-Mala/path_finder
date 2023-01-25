@@ -56,7 +56,7 @@ def rec_transit(in_city, connections, city_values, value_now, time_limit, time_n
     for i, next_city in enumerate(travel_options):
         rec_transit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
         path_now.pop()
-        if f"--> {next_city} {city_values[in_city]} Visit" not in path_now:
+        if f"--> {next_city} {city_values[next_city]} Visit" not in path_now:
             rec_visit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
             path_now.pop()
 
@@ -76,7 +76,7 @@ def rec_visit(in_city, connections, city_values, value_now, time_limit, time_now
     for i, next_city in enumerate(travel_options):
         rec_transit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
         path_now.pop()
-        if f"--> {next_city} {city_values[in_city]} Visit" not in path_now:
+        if f"--> {next_city} {city_values[next_city]} Visit" not in path_now:
             rec_visit(next_city, connections, city_values, value_now, time_limit, time_now, res_ls, path_now)
             path_now.pop()
 
