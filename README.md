@@ -14,7 +14,7 @@ You could visit every location only one time but there is no limitations for tra
 Red marked locations are locked for visiting until certain amount of time units will pass, transit is possible any time.
 Some locations have additional conditions to become accessible to visit.
 Goal: find path to maximize total earned value in a limited time.
-
+![IMG_4183](https://github.com/Yulia-Mala/path_finder/assets/121285272/1af03a14-a7ed-4c3b-8339-4d9dd99035a2)
 
 ## Solution 
 Since classical shortest paths algorithms like Dijkstra's algorithm could not be applied, 
@@ -38,5 +38,6 @@ I need to apply multiprocessing to my recursion algorithm!
 I used manager.Value to provide a piece of shared memory for my processes was able to share 
 current best value and stop calling recursion earlier. It helps. You can see the runtime difference
 on the plot below. But it still not enough :)  So I hope ... to be continued) 
+<img width="601" alt="Monosnap Електронна таблиця без назви - Google Таблиці 2023-05-16 02-51-10" src="https://github.com/Yulia-Mala/path_finder/assets/121285272/a86c18ee-b058-411e-8186-c41c81f6212f">
 
 Thanks for your time! 
